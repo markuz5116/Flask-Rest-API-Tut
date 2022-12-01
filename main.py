@@ -11,16 +11,21 @@ video_put_args.add_argument("likes", type=int, help="Likes on the video required
 
 videos = {}
 
-def abort_video_id_unknown(video_id):
+def abort_if_video_id_unknown(video_id):
     if video_id not in videos:
-        abort(404, message="Video id cannot be found")
+        abort(404, message="Video id cannot be found...")
+
+def abort_if_video_id_exists(video_id):
+    if video_id in videos:
+        abort(409, message="Video id already exists...")
 
 class Video(Resource):
     def get(self, video_id):
-        abort_video_id_unknown(video_id)
+        abort_if_video_id_unknown(video_id)
         return videos[video_id]
 
     def put(self, video_id):
+        abort_if_video_id_exists(video_id)
         args = video_put_args.parse_args()
         videos[video_id] = args
         return videos[video_id], 201
