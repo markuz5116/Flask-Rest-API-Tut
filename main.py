@@ -1,8 +1,13 @@
 from flask import Flask
-from flask_restful import Api, Resource
+from flask_restful import Api, Resource, reqparse
 
 app = Flask(__name__)
 api = Api(app)
+
+video_put_args = reqparse.RequestParser()
+video_put_args.add_argument("name", type=str, help="Name of video required", required=True)
+video_put_args.add_argument("views", type=str, help="Views on the video required", required=True)
+video_put_args.add_argument("likes", type=str, help="Likes on the video required", required=True)
 
 videos = {}
 
@@ -11,7 +16,8 @@ class Video(Resource):
         return videos[video_id]
 
     def put(self, video_id):
-        return {}
+        args = video_put_args.parse_args()
+        return {video_id: args}
 
 api.add_resource(Video, "/video/<int:video_id>")
 
