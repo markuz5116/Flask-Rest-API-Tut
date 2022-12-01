@@ -26,3 +26,7 @@ input()
 for i in range(len(data)):
     response = requests.patch(f"{BASE}video/{i}", {"name": f"video{i}"})
     print(response.json())
+
+input()
+for i in range(len(data)):
+    response = requests.delete(f"{BASE}video/{i}")
