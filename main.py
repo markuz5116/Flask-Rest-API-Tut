@@ -23,6 +23,11 @@ video_put_args.add_argument("name", type=str, help="Name of video required", req
 video_put_args.add_argument("views", type=int, help="Views on the video required", required=True)
 video_put_args.add_argument("likes", type=int, help="Likes on the video required", required=True)
 
+video_update_args = reqparse.RequestParser()
+video_update_args.add_argument("name", type=str)
+video_update_args.add_argument("views", type=int)
+video_update_args.add_argument("likes", type=int)
+
 resource_fields = {
     "id": fields.Integer,
     "name": fields.String,
@@ -43,11 +48,29 @@ class Video(Resource):
         video = VideoModel.query.filter_by(id=video_id).first()
         if video:
             abort(409, message="Video id already exists...")
+
         args = video_put_args.parse_args()
         video = VideoModel(id=video_id, name=args['name'], views=args['views'], likes=args['likes'])
         db.session.add(video)
         db.session.commit()
         return video, 201
+
+    @marshal_with(resource_fields)
+    def patch(self, video_id):
+        video = VideoModel.query.filter_by(id=video_id).first()
+        if not video:
+            abort(404, message="Video id not found...")
+        
+        args = video_update_args.parse_args()
+        if len(args) <= 0:
+            print(args)
+            abort(400, message="At least one of name, views or likes is required...")
+
+        for key, val in args.items():
+            if val:
+                setattr(video, key, val)
+        db.session.commit()
+        return video
 
     # def delete(self, video_id):
     #     abort_if_video_id_unknown(video_id)
