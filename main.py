@@ -37,11 +37,13 @@ class Video(Resource):
         video = VideoModel.query.get(id=video_id)
         return video
 
+    @marshal_with(resource_fields)
     def put(self, video_id):
-        abort_if_video_id_exists(video_id)
         args = video_put_args.parse_args()
-        videos[video_id] = args
-        return videos[video_id], 201
+        video = VideoModel(id=video_id, name=args['name'], views=args['views'], likes=args['likes'])
+        db.session.add(video)
+        db.session.commit()
+        return video, 201
 
     def delete(self, video_id):
         abort_if_video_id_unknown(video_id)
