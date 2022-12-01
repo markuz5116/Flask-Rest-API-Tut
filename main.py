@@ -5,7 +5,6 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 api = Api(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
-
 db = SQLAlchemy(app)
 
 class VideoModel(db.Model):
@@ -34,23 +33,28 @@ resource_fields = {
 class Video(Resource):
     @marshal_with(resource_fields)
     def get(self, video_id):
-        video = VideoModel.query.get(id=video_id)
+        video = VideoModel.query.filter_by(id=video_id).first()
+        if not video:
+            abort(404, message="Video id not found...")
         return video
 
     @marshal_with(resource_fields)
     def put(self, video_id):
+        video = VideoModel.query.filter_by(id=video_id).first()
+        if video:
+            abort(409, message="Video id already exists...")
         args = video_put_args.parse_args()
         video = VideoModel(id=video_id, name=args['name'], views=args['views'], likes=args['likes'])
         db.session.add(video)
         db.session.commit()
         return video, 201
 
-    def delete(self, video_id):
-        abort_if_video_id_unknown(video_id)
-        deleted_vid = videos[video_id]
-        print(f'{deleted_vid} is removed...')
-        del videos[video_id]
-        return '', 204
+    # def delete(self, video_id):
+    #     abort_if_video_id_unknown(video_id)
+    #     deleted_vid = videos[video_id]
+    #     print(f'{deleted_vid} is removed...')
+    #     del videos[video_id]
+    #     return '', 204
 
 api.add_resource(Video, "/video/<int:video_id>")
 
